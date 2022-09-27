@@ -1,17 +1,16 @@
 import pandas as pd
 import pprint
 from statistics import mean
-# import datetime
-# import openpyxl
+
 pd.options.mode.chained_assignment = None
-
-# from datetime import datetime
-# import matplotlib.pyplot as plt
-
-# C:\Users\Eugene\Downloads\data1.xls пример ссылки
 
 
 class Processing:
+    """Класс Processing является реализацией программы. Содержит в себе методы для дальнейшей обработки
+    датасета с температурой. Для обработки может использоваться .xls или .xlsx файл, скачанный, например, с
+    сайта https://rp5.ru/. Чтобы программа могла работать с файлом необходимо удалить шапку перед таблицами
+    на листе с данными температур, так, чтобы лист начинался с названий столбцов. Столбец с датами обрабатываемого
+    периода необходимо назвать "data", столбец с температурами необходимо назвать "T"."""
     def __init__(self, t_mean_day=0, average_monthly_temperature=0, ds_duration_heating_period=0, data_heat_period=[],
                  real_start_heating_date=0, real_end_heating_date=0,
                  duration_heating_period=0, min_temp_day_of_heat_temp=0,
@@ -30,31 +29,43 @@ class Processing:
         self.gsop = gsop
 
     def preliminary_processing(self):
-        # link = input("Введите ссылку на интересующий файл:")
+        """Метод preliminary_processing служит для предварительной обработки файлов типа .xls или .xlsx.
+        Необходимо ввести полную ссылку до файла, например "C:\Users\Eugene\Downloads\data1.xls".
+         В качестве выходных данных реализуется таблица из двух колонок первая из которых дата,
+          а вторая средняя температура за день. Также выводится начальная дата исследуемого периода,
+          конечная дата исследуемого периода, количество дней между начальной и конечной датами,
+          фактическое количество дней с данными по температуре, количество дней с пропущенными датами,
+           список дат с отсутствующими данными по температуре с виде списка."""
+        # Предлагается ввести ссылку на интересующий файл
         link_input = input("Введите ссылку на интересующий файл:")
         link = link_input.replace("\\", "/")
-        # open file for reading
+        # Открытие файла на чтение
         data = pd.read_excel(link)
-        # pick up 2 columns with date and temperature
-        t2005_2022 = data[["data", "T"]]
-        # test file
-        test2005_2022 = t2005_2022
-        # we bring the column with dates into the dataframe format and immediately delete the hours and minutes
+        # Сохранение двух колонок для дальнейшей обраобтки
+        test2005_2022 = data[["data", "T"]]
+        # Приведение формата дат от "гггг:мм:дд чч:мм" к "гггг:мм:дд"
         test2005_2022["data"] = pd.to_datetime(test2005_2022["data"], format="%d.%m.%Y %H:%M").dt.date
-        # calculate the average temperature by day / automatic sorting by date from the earliest
+        # Подсчет средней температуры за день и сортировка по дате
         self.t_mean_day = test2005_2022.groupby("data").agg({"T": "mean"})
-        # print(test2005_2022.head())
-
-        start_chain = self.t_mean_day.index[0]  # start date of the study period
-        end_chain = self.t_mean_day.index[-1] # end date of the study period
+        # Начальная дата исследиемого периода
+        start_chain = self.t_mean_day.index[0]
+        # Конечная дата исследуемого периода
+        end_chain = self.t_mean_day.index[-1]
+        # Вывод на печать начальной даты исследуемого периода с описанием
         start_chain_with_desc = f"Начальная дата исследуемого периода: {self.t_mean_day.index[0]}"
+        # Вывод на печать конечной даты исследуемого периода с описанием
         end_chain_with_desc = f"Конечная дата исследуемого периода: {self.t_mean_day.index[-1]}"
-        days_with_temp = (end_chain - start_chain)  # number of days between start and end dates
+        # Нахождение количества дней между начальной и конечной датами
+        days_with_temp = (end_chain - start_chain)
+        # Количество дней между начальной и конечной датами с описанием
         days_with_temp_with_desc = f"Количество дней между начальной и конечной датами: {days_with_temp.days} дней"
-        total_cols = len(self.t_mean_day)  # actual number of days with temperature data
+        # Нахождение фактического числа дней с данными по температуре
+        total_cols = len(self.t_mean_day)
+        # Фактическое число дней с данными по температуре с описанием
         total_cols_with_desc = f"Фактическое количество дней с данными по температуре: {total_cols} дней"
-        # number of missed days in the time sequence
+        # Нахождение количества пропущенных дней (дней без данных по температуре)
         numbers_of_missing_days = (end_chain - start_chain).days - len(self.t_mean_day)
+        # Количество пропущенных дней с описанием
         numbers_of_missing_days_with_desc = f"Количество пропущенных дней временной последовательности " \
                                         f"{numbers_of_missing_days}"
 
@@ -82,7 +93,7 @@ class Processing:
         print(end_chain_with_desc)
         print(days_with_temp_with_desc)
         print(total_cols_with_desc)
-        print(numbers_of_missing_days_with_desc)
+        #print(numbers_of_missing_days_with_desc)
 
         # test2005_2022.sort_index(inplace=True)
         # print(test2005_2022.index[-1])
